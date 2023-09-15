@@ -5,18 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class PersonController extends Controller
 {
     // Create a new person
     public function store(Request $request) {
-        $data = $request->validate([
-            'name' => 'required|unique:people,name|string'
-        ]);
+    
+        try {
+            // $this->validate($request, [
+            //     'name' => 'required|string|unique:people,name,',
+            // ]);
 
-        $person = Person::create($data);
+            $data = $request->validate([
+                'name' => 'required|unique:people,name|string'
+            ]);
 
-        return response()->json($person);
+            $person = Person::create($data);
+
+            return response()->json($person);
+           
+        } catch (Throwable $e) {
+            // Handle validation errors
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+
     }
 
     // Fetch details of a person
@@ -45,7 +58,6 @@ class PersonController extends Controller
         try {
             $this->validate($request, [
                 'name' => 'required|string|unique:people,name,' . $person->id,
-                'age' => 'required|integer',
             ]);
         } catch (ValidationException $e) {
             // Handle validation errors
